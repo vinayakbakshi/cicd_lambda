@@ -1,0 +1,12 @@
+Pillow
+boto3
+numpy
+cv2
+os
+tempfile
+tensorflow
+tifffile
+csbdeep
+stardist
+PIL 
+io

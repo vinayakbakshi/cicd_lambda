@@ -1,0 +1,53 @@
+name: deploylambdafunction
+
+#jlt
+on:
+  # push:
+  #   paths:
+  #     - "src/**"
+  #   branches:
+  #       - main
+  #       - working_setup1
+  #       - working_setup2
+  trigger:
+    Type: S3
+    Properties:
+      Bucket: !Ref cicdlambda
+      Events: s3:ObjectCreated:*
+      Filter:
+        S3Key:
+          Rules:
+            - Name: prefix
+              Value: validationimages/
+            - Name: suffix
+              Value: .jpg
+            - Name: suffix
+              Value: .tif
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: checkout validation
+        run: echo "checkout complete"
+
+      - name: install zip tool
+        uses: montudor/action-zip@v1
+
+      - name: Create Zip file for lambda function
+        run: cd src && zip -r code.zip .
+
+      - name: Show zip file name
+        run: readlink -f code.zip
+
+      - name: lambda_code_update
+        run: |
+          aws lambda update-function-code --function-name cicd_lambda --zip-file fileb://src/code.zip
+        env: 
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_DEFAULT_REGION: "ap-south-1"
